@@ -6,7 +6,7 @@ async function connectBD() {
         console.log("Conectado a MongoDB Atlas");
     } catch (error) {
         console.error("Error al conectar a MongoDB Atlas:", error);
-        process.exit(1); // Finaliza el proceso con código de error
+        process.exit(1); 
     }
 }
 
