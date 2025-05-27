@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const HttpError = require("../../src/utils/Http-Error");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new Schema(
@@ -15,6 +16,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    name: {
+      type: String,
+      required: true,
+    },
+    dni: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     role: {
       type: String,
       enum: ["superadmin", "teacher", "student"],
@@ -22,7 +32,7 @@ const userSchema = new Schema(
     },
     profile: {
       type: Schema.Types.Mixed, // guardp datos  según el rol
-      required: true,
+      //required: true,
     },
     token: {
       type: String,

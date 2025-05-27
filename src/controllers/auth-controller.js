@@ -25,8 +25,6 @@ const login = async (req, res, next) => {
     res.send({ message: "Usuario logueado correctamente", user, token });
   } catch (e) {
     if (e instanceof HttpError) return next(e);
-
-    // Error inesperado
     console.error(e);
     next(new HttpError("Error interno del servidor", 500));
   }
