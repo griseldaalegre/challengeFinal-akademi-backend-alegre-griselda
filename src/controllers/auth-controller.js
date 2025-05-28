@@ -24,10 +24,9 @@ const login = async (req, res, next) => {
 
     res.send({ message: "Usuario logueado correctamente", user, token });
   } catch (e) {
-    if (e instanceof HttpError) return next(e);
-    console.error(e);
-    next(new HttpError("Error interno del servidor", 500));
+    next(new HttpError(e));
   }
+  
 };
 
 const registerUser = async (req, res, next) => {
@@ -50,9 +49,9 @@ const registerUser = async (req, res, next) => {
       user: userObj,
     });
   } catch (e) {
-    console.error(e);
-    next(new HttpError("Error al crear el usuario", 400));
+    next(new HttpError(e));
   }
+  
 };
 
 const forgotPassword = async (req, res, next) => {
@@ -103,10 +102,10 @@ const resetPassword = async (req, res, next) => {
     await user.save();
 
     res.send({ message: "Contraseña actualizada exitosamente" });
-  } catch (err) {
-    console.error(err);
-    next(new HttpError("Token inválido o expirado", 400));
+  } catch (e) {
+    next(new HttpError(e));
   }
+  
 };
 
 module.exports = {

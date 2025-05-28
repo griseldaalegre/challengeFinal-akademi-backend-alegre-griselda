@@ -5,6 +5,7 @@ require("./db/mongoose");
 const authRouter = require("./routes/auth-routes");
 const usersRouter = require("./routes/users-routes");
 const coursesRouter = require("./routes/courses-routes");
+const enrollmentsRouter = require("./routes/enrollments-routes");
 
 const auth = require("./middlewares/auth");
 
@@ -26,6 +27,7 @@ app.use("/auth", authRouter);
 app.use(auth);
 app.use("/users", usersRouter);
 app.use("/courses", coursesRouter);
+app.use("/enrollments", enrollmentsRouter);
 app.use(errorHandler);
 
 app.listen(port, () => {

@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Course = require("../models/Course");
-const HttpError = require("../utils/http-error");
+const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/pagination");
 
 const getUsers = async (req, res, next) => {
@@ -28,9 +28,9 @@ const getUsers = async (req, res, next) => {
       data: sanitizedUsers,
     });
   } catch (e) {
-    console.error("Error al obtener usuarios:", e);
-    next(new HttpError("No se pudieron obtener los usuarios", 500));
+    next(new HttpError(e));
   }
+  
 };
 
 const getUser = async (req, res, next) => {
@@ -52,8 +52,9 @@ const getUser = async (req, res, next) => {
 
     res.send({ message: "Detalles del usuario", user: userObj });
   } catch (e) {
-    next(new HttpError("Error al obtener usuario.", 500));
+    next(new HttpError(e));
   }
+  
 };
 
 //modularizar mejor
@@ -98,10 +99,10 @@ const editUser = async (req, res, next) => {
       message: "Usuario editado correctamente",
       user: userObj,
     });
-  } catch (e) {
-    console.error(e);
-    next(new HttpError("No se pudo actualizar el usuario", 400));
+  }catch (e) {
+    next(new HttpError(e));
   }
+  
 };
 
 const deleteUser = async (req, res, next) => {
@@ -109,7 +110,7 @@ const deleteUser = async (req, res, next) => {
     const user = await User.findById(req.params.id);
     if (!user) return next(new HttpError("Usuario no encontrado", 404));
 
-    if (user.role === "teacher") {
+    if (user.role === "professor") {
       const cursos = await Course.find({ professor: user._id });
       if (cursos.length > 0) {
         return next(
@@ -128,9 +129,9 @@ const deleteUser = async (req, res, next) => {
       user,
     });
   } catch (e) {
-    console.error(e);
-    next(new HttpError("Error al eliminar el usuario", 500));
+    next(new HttpError(e));
   }
+  
 };
 
 const createUser = async (req, res, next) => {
@@ -150,8 +151,9 @@ const createUser = async (req, res, next) => {
       user: userObj,
     });
   } catch (e) {
-    next(new HttpError("Error al crear usuario", 400));
+    next(new HttpError(e));
   }
+  
 };
 
 module.exports = {
