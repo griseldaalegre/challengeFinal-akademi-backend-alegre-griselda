@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-// Modelo Course: representa un curso creado por un profesor.
-
 
 const courseSchema = new Schema({
   title: {

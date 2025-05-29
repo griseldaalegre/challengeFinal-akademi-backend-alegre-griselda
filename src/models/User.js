@@ -28,6 +28,7 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ["superadmin", "professor", "student"],
+      default: "student",
       required: true,
     },
     profile: {
@@ -52,7 +53,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw new HttpError("La contraseña ingresada es incorrecta", 401); //revisar
+    throw new HttpError("La contraseña x es incorrecta", 401); //revisar
   }
 
   return user;

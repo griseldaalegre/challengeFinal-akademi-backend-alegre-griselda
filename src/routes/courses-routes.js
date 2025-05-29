@@ -3,7 +3,6 @@ const router = express.Router();
 const permit = require("../middlewares/roles");
 const handleValidationErrors = require("../middlewares/handle-validation-errors"); //revisar
 const {createCourseValidator} = require("../validators/course-validator");
-//const valitateOwner = require("../middlewares/validate-owner");
 const coursesController = require("../controllers/courses-controller");
 
 
@@ -14,8 +13,8 @@ router.post("/", permit("professor"), createCourseValidator, handleValidationErr
 
 // · GET/courses/:id- Detalle del curso
 router.get("/:id", permit("student", "professor"), coursesController.getCourse);
-// · PATCH/courses/:id- Editar curso (solo profesor)
 
+// · PATCH/courses/:id- Editar curso (solo profesor)
 router.patch("/:id", permit("professor"), coursesController.updateCourse);
 
 router.delete("/:id", permit("professor"), coursesController.deleteCourse);

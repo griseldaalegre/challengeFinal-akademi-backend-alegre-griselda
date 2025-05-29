@@ -39,10 +39,10 @@ const editUserValidator = [
     .notEmpty()
     .withMessage("El nombre no puede estar vacío"),
   check("dni").optional().notEmpty().withMessage("El DNI no puede estar vacío"),
-  check("role")
-    .optional()
-    .isIn(["superadmin", "professor"])
-    .withMessage("Rol inválido. Debe ser 'superadmin', 'professor'"),
+  //check("role")
+    //.optional()
+    //.isIn(["superadmin", "professor"])
+    //.withMessage("Rol inválido. Debe ser 'superadmin', 'professor'"),
   body("profile")
     .optional()
     .custom((value, { req }) => {

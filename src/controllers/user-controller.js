@@ -59,7 +59,8 @@ const getUser = async (req, res, next) => {
 
 //modularizar mejor
 const editUser = async (req, res, next) => {
-  const allowed = ["name", "email", "dni", "password", "role", "profile"];
+  const allowed = ["name", "email", "dni", "password", "profile"]; //revisar como controlar el rol
+  //usar -> is course of this user
   const updates = Object.keys(req.body);
 
   const isValidUpdate = updates.find((key) => !allowed.includes(key));
@@ -108,7 +109,10 @@ const editUser = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return next(new HttpError("Usuario no encontrado", 404));
+
+    if (!user) {
+      return next(new HttpError("Usuario no encontrado", 404));
+    }
 
     if (user.role === "professor") {
       const cursos = await Course.find({ professor: user._id });
@@ -129,10 +133,10 @@ const deleteUser = async (req, res, next) => {
       user,
     });
   } catch (e) {
-    next(new HttpError(e));
+    next(new HttpError(e.message || "Error al eliminar usuario", 500));
   }
-  
 };
+
 
 const createUser = async (req, res, next) => {
   const { email } = req.body;

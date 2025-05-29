@@ -16,6 +16,7 @@ const registerValidator = [
   check("name").not().isEmpty().withMessage("El nombre es requerido"),
   check("dni").notEmpty().withMessage("El DNI no puede estar vacío"),
   check("role")
+  .optional()
     .equals("student")
     .withMessage("Solo se puede registrar alumnos"),
 ];

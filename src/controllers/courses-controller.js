@@ -1,6 +1,7 @@
 const Course = require("../models/Course");
 const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/Pagination");
+const  isCourseOfThisUser = require("../utils/is-course-this-user");//renombrar
 
 const getCourses = async (req, res, next) => {
   const { category, level, price, page, limit } = req.query;
@@ -28,9 +29,9 @@ const getCourses = async (req, res, next) => {
 
 const createCourse = async (req, res, next) => {
   try {
-    isCourseOfThisProfessor(
-      req.user.id.toString(),
-      req.body.professor.toString()
+    isCourseOfThisUser(
+      req.user,
+      req.body
     );
 
     const course = new Course(req.body);
@@ -77,9 +78,9 @@ const updateCourse = async (req, res, next) => {
 
   try {
     if (req.body.professor) {
-      isCourseOfThisProfessor(
-        req.user._id.toString(),
-        req.body.professor.toString()
+      isCourseOfThisUser(
+        req.user,
+        req.body.professor
       );
     }
 
@@ -100,7 +101,7 @@ const updateCourse = async (req, res, next) => {
   }
   
 };
-
+// como profe y admin puedo eliminar un curso -> mi curso
 const deleteCourse = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -109,9 +110,9 @@ const deleteCourse = async (req, res, next) => {
       return next(new HttpError("Curso no encontrado", 404));
     }
 
-    isCourseOfThisProfessor(
-      req.user._id.toString(),
-      course.professor.toString()
+    isCourseOfThisUser(
+      req.user,
+      course.professor
     );
 
     await course.deleteOne();
@@ -125,11 +126,11 @@ const deleteCourse = async (req, res, next) => {
 const getCoursesByProfessor = async (req, res, next) => {
   const { page, limit } = req.query;
   try {
-    isCourseOfThisProfessor(req.user._id.toString(), req.params.id.toString());
+    isCourseOfThisUser(req.user, req.params);
 
     const result = await paginate(
       Course,
-      { professor: req.user._id },//revisar
+      { professor: req.params.id },//revisar
       page,
       limit
     );
@@ -148,11 +149,8 @@ const getCoursesByProfessor = async (req, res, next) => {
   
 };
 
-const isCourseOfThisProfessor = (professorAuthId, professorIdCourse) => {
-  if (professorIdCourse !== professorAuthId) {
-    throw new HttpError("Usted no lo dicta este curso", 403);
-  }
-};
+
+
 
 module.exports = {
   getCourses,
