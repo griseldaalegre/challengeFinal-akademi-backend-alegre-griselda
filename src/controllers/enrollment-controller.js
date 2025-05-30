@@ -2,8 +2,7 @@ const Enrollment = require("../models/Enrollment");
 const Course = require("../models/Course");
 const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/Pagination");
-const  isCourseOfThisUser = require("../utils/is-course-this-user");//renombrar
-
+const isCourseOfThisUser = require("../utils/is-course-this-user"); //renombrar
 
 //listar inscripciones del propio estudiante
 const getEnrollments = async (req, res, next) => {
@@ -11,7 +10,7 @@ const getEnrollments = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    isCourseOfThisUser(req.user, id);
+    isCourseOfThisUser(req.user, id, "Las inscripciones no te pertenecen");
 
     const result = await paginate(Enrollment, { student: id }, page, limit);
 
@@ -24,7 +23,7 @@ const getEnrollments = async (req, res, next) => {
       ...result,
     });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
 };
 const enrollStudentInCourse = async (req, res, next) => {
@@ -36,6 +35,11 @@ const enrollStudentInCourse = async (req, res, next) => {
     if (!course) {
       return next(new HttpError("Curso no encontrado", 404));
     }
+    isCourseOfThisUser(
+      req.user,
+      student,
+      "No te estas inscribiendo con tu usuario"
+    );
 
     const existingEnrollment = await Enrollment.findOne({
       student,
@@ -63,29 +67,38 @@ const enrollStudentInCourse = async (req, res, next) => {
       enrollment,
     });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
 };
 
 const cancelEnrollment = async (req, res, next) => {
   try {
-    const enrollment = await Enrollment.findByIdAndDelete(req.params.id);
+    const enrollment = await Enrollment.findById(req.params.id);
+
     if (!enrollment) {
-      return next(new HttpError("Inscripción no encontrado", 404));
+      return next(new HttpError("Inscripción no encontrada", 404));
     }
+
+    isCourseOfThisUser(
+      req.user,
+      enrollment.student,
+      "La inscripción no te pertenece"
+    ); 
+
+    await enrollment.deleteOne(); 
+
     res.status(200).json({
       message: "Inscripción cancelada",
       enrollment,
     });
   } catch (e) {
-    next(new HttpError(e));
-  }
+    next(error);  }
 };
 
 const getEnrollmentsByCourse = async (req, res, next) => {
   const { id } = req.params;
   const { page, limit } = req.query;
-console.log(id)
+
   try {
     const course = await Course.findById(id);
     console.log(course);
@@ -95,12 +108,7 @@ console.log(id)
 
     isCourseOfThisUser(req.user, course.professor);
 
-    const result = await paginate(
-      Enrollment,
-      { course: id },
-      page,
-      limit
-    );
+    const result = await paginate(Enrollment, { course: id }, page, limit);
 
     if (result.data.length === 0) {
       return next(new HttpError("No hay inscripciones en este curso", 404));
@@ -111,11 +119,9 @@ console.log(id)
       ...result,
     });
   } catch (err) {
-    next(new HttpError(err));
+    next(error);
   }
 };
-
-
 
 module.exports = {
   getEnrollments,

@@ -29,7 +29,7 @@ const addGrade = async (req, res, next) => {
       grade,
     });
   } catch (e) {
-    next(new HttpError(e.message || "Error al guardar calificación"));
+    next(error);
   }
 };
 
@@ -51,7 +51,7 @@ const updateGrade = async (req, res, next) => {
       return next(new HttpError("Calificación no encontrada", 404));
     }
 
-    isCourseOfThisUser(req.user, existingGrade.course);
+    isCourseOfThisUser(req.user, existingGrade.course.professor);
 
     const updatedGrade = await Grade.findByIdAndUpdate(
       req.params.id,
@@ -66,7 +66,7 @@ const updateGrade = async (req, res, next) => {
       grade: updatedGrade,
     });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
 };
 
@@ -92,7 +92,7 @@ const getGradesByStudent = async (req, res, next) => {
       ...result,
     });
   } catch (e) {
-    next(new HttpError(e.message || "Error al obtener calificaciones", 500));
+    next(error);
   }
 };
 

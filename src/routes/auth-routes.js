@@ -4,13 +4,13 @@ const { loginValidator,registerValidator, passwordValidator } = require("../vali
 const handleValidationErrors = require("../middlewares/handle-validation-errors"); //revisar
 const authController = require("../controllers/auth-controller")
 
-//rutas publicas
+
 router.post("/register", registerValidator,handleValidationErrors, authController.registerUser); // validar dni
-//login
+
 router.post("/login", loginValidator, handleValidationErrors, authController.login);
-module.exports = router;
-//forgot password
+
 router.post("/forgot-password", authController.forgotPassword);
-//reset password
+
 router.post("/reset-password", passwordValidator, handleValidationErrors, authController.resetPassword);
 
+module.exports = router;

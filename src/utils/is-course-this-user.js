@@ -1,12 +1,16 @@
 const HttpError = require("../utils/Http-Error");
-const isCourseOfThisUser = (reqUserAuth, courseProfessorId) => {
-  // Superadmin tiene acceso total
-  if (reqUserAuth.role === "superadmin") return;
 
-  // Solo el profesor que dicta puede acceder
-  if (reqUserAuth._id.toString() !== courseProfessorId.toString()) {
+const isCourseOfThisUser = (userAuth, ownerId, resourceName = "para utilizar este recurso") => {
+  if (userAuth.role === "superadmin") return;
 
-    throw new HttpError("No autorizado: el curso no te pertenece", 403);
+  const ownerString = typeof ownerId === "object" && ownerId.toString ? ownerId.toString() : ownerId;
+  const userString = userAuth._id.toString();
+
+  console.log("userAuth._id:", userString);
+  console.log("ownerId:", ownerString);
+
+  if (userString !== ownerString) {
+    throw new HttpError(`No autorizado: ${resourceName}`, 403);
   }
 };
 

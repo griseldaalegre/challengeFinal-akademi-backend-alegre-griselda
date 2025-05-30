@@ -5,16 +5,12 @@ const {enrollmentValidator} = require("../validators/enrollment-validator");
 const handleValidationErrors = require("../middlewares/handle-validation-errors");
 const enrollmentController = require("../controllers/enrollment-controller");
 
-//  · GET/enrollments/studentId- Listar mis inscripciones (solo alumno)
 router.get("/student/:id", permit("student"),  enrollmentController.getEnrollments);
 
-// · POST/enrollments- Inscribirse a un curso (solo alumno)
 router.post("/", permit("student"), enrollmentValidator, handleValidationErrors, enrollmentController.enrollStudentInCourse )
 
-// · DELETE/enrollments/:id- Cancelar inscripción (solo alumno)
 router.delete("/:id", permit("student"), enrollmentController.cancelEnrollment);
 
-// · GET/enrollments/courseId– Listar inscripciones por curso (solo profesor)
 router.get("/course/:id", permit("professor"), enrollmentController.getEnrollmentsByCourse);
 
  module.exports = router;

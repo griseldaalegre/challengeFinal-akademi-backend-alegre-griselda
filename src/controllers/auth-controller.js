@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const HttpError = require("../utils/Http-Error");
 const { sendRecoverEmail } = require("../email/recovery-email");
 
+//probar en que casos falla
 const login = async (req, res, next) => {
   try {
     const user = await User.findByCredentials(
@@ -24,7 +25,7 @@ const login = async (req, res, next) => {
 
     res.send({ message: "Usuario logueado correctamente", user, token });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
   
 };
@@ -49,7 +50,7 @@ const registerUser = async (req, res, next) => {
       user: userObj,
     });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
   
 };
@@ -103,7 +104,7 @@ const resetPassword = async (req, res, next) => {
 
     res.send({ message: "Contraseña actualizada exitosamente" });
   } catch (e) {
-    next(new HttpError(e));
+    next(error);
   }
   
 };
