@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const permit = require("../middlewares/roles");
-const handleValidationErrors = require("../middlewares/handle-validation-errors"); //revisar
+const handleValidationErrors = require("../middlewares/handle-validation-errors"); 
 const {createCourseValidator} = require("../validators/course-validator");
 const coursesController = require("../controllers/courses-controller");
 
@@ -10,7 +10,7 @@ router.get("/", permit("student"), coursesController.getCourses);
 
 router.post("/", permit("professor"), createCourseValidator, handleValidationErrors,  coursesController.createCourse);
 
-router.get("/:id", permit("student", "professor"), coursesController.getCourse);
+router.get("/:id", permit("student"), coursesController.getCourse);
 
 router.patch("/:id", permit("professor"), coursesController.updateCourse);
 

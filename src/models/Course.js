@@ -7,8 +7,16 @@ const courseSchema = new Schema({
     required: true
   },
   description: String,
-  category: String,
-  level: String,
+  category: {
+    type: String,
+    enum: ['web', 'cyber'],
+    required: true
+  },
+  level: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced'],
+    required: true
+  },
   price: {
     type: Number,
     default: 0
@@ -25,5 +33,6 @@ const courseSchema = new Schema({
 }, {
   timestamps: true
 });
+
 
 module.exports = mongoose.model('Course', courseSchema);

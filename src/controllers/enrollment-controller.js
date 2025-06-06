@@ -2,9 +2,8 @@ const Enrollment = require("../models/Enrollment");
 const Course = require("../models/Course");
 const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/Pagination");
-const isCourseOfThisUser = require("../utils/is-course-this-user"); //renombrar
+const isCourseOfThisUser = require("../utils/is-course-this-user");
 
-//listar inscripciones del propio estudiante
 const getEnrollments = async (req, res, next) => {
   const { page, limit } = req.query;
   const { id } = req.params;
@@ -14,21 +13,21 @@ const getEnrollments = async (req, res, next) => {
 
     const result = await paginate(Enrollment, { student: id }, page, limit);
 
-    if (result.data.length === 0) {
-      return next(new HttpError("No se encontraron inscripciones", 404));
-    }
+    await Enrollment.populate(result.data, [
+      { path: "course", populate: { path: "professor" } },
+      { path: "student" },
+    ]);
 
     res.status(200).json({
       message: "Listado de inscripciones",
       ...result,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 const enrollStudentInCourse = async (req, res, next) => {
   try {
-    //revisar destructurign
     const { student, course: courseId } = req.body;
 
     const course = await Course.findById(courseId);
@@ -67,13 +66,15 @@ const enrollStudentInCourse = async (req, res, next) => {
       enrollment,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
 const cancelEnrollment = async (req, res, next) => {
   try {
-    const enrollment = await Enrollment.findById(req.params.id);
+    const enrollmentId = req.params.id;
+
+    const enrollment = await Enrollment.findById(enrollmentId);
 
     if (!enrollment) {
       return next(new HttpError("Inscripción no encontrada", 404));
@@ -83,16 +84,19 @@ const cancelEnrollment = async (req, res, next) => {
       req.user,
       enrollment.student,
       "La inscripción no te pertenece"
-    ); 
+    );
 
-    await enrollment.deleteOne(); 
+    console.log("REQ.BODY:", req.body);
+
+    await enrollment.deleteOne();
 
     res.status(200).json({
       message: "Inscripción cancelada",
       enrollment,
     });
   } catch (e) {
-    next(error);  }
+    next(e);
+  }
 };
 
 const getEnrollmentsByCourse = async (req, res, next) => {
@@ -110,6 +114,11 @@ const getEnrollmentsByCourse = async (req, res, next) => {
 
     const result = await paginate(Enrollment, { course: id }, page, limit);
 
+    await Enrollment.populate(result.data, [
+      { path: "student" },
+      { path: "course" },
+    ]);
+
     if (result.data.length === 0) {
       return next(new HttpError("No hay inscripciones en este curso", 404));
     }
@@ -118,8 +127,8 @@ const getEnrollmentsByCourse = async (req, res, next) => {
       message: "Inscripciones encontradas",
       ...result,
     });
-  } catch (err) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 

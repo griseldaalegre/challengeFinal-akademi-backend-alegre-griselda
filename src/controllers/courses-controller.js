@@ -3,29 +3,38 @@ const Enrollment = require("../models/Enrollment");
 const User = require("../models/User");
 const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/Pagination");
-const isCourseOfThisUser = require("../utils/is-course-this-user"); //renombrar
+const isCourseOfThisUser = require("../utils/is-course-this-user"); 
 
 const getCourses = async (req, res, next) => {
   const { category, level, price, page, limit } = req.query;
 
-  filter = {};
+  const filter = {};
 
   if (category) filter.category = new RegExp(category, "i");
   if (level) filter.level = new RegExp(level, "i");
   if (price) filter.price = price;
+
   try {
     const result = await paginate(Course, filter, page, limit);
+
     if (result.data.length === 0) {
       return next(
         new HttpError("No se encontraron cursos con esos criterios", 404)
       );
     }
+
+    const populatedData = await Course.populate(result.data, {
+      path: "professor",
+      select: "name email dni role", 
+    });
+
     res.send({
-      message: "Listado dde cursos",
+      message: "Listado de cursos",
       ...result,
+      data: populatedData,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -38,13 +47,15 @@ const createCourse = async (req, res, next) => {
       return next(new HttpError("Profesor no encontrado", 404));
     }
 
-    isCourseOfThisUser(req.user, professorUser, "No dictas este curso");
+    isCourseOfThisUser(req.user._id, professorUser._id, "No dictas este curso");
 
     const course = new Course(req.body);
     await course.save();
-    res.status(201).send({ message: "Curso creado correctamente", course });
+    const populatedCourse = await Course.findById(course._id).populate("professor");
+
+    res.status(201).send({ message: "Curso creado correctamente", course: populatedCourse });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -53,6 +64,7 @@ const getCourse = async (req, res, next) => {
   if (!id) {
     return next(new HttpError("Se requiere el id del curso"));
   }
+  
 
   try {
     const course = await Course.findById(id);
@@ -61,7 +73,7 @@ const getCourse = async (req, res, next) => {
     }
     res.send({ message: " Detalles del curso", course });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -74,6 +86,7 @@ const updateCourse = async (req, res, next) => {
     "level",
     "price",
     "capacity",
+    "professor",
   ];
   const isValid = updates.every((u) => allowed.includes(u));
 
@@ -87,7 +100,7 @@ const updateCourse = async (req, res, next) => {
     if (!course) {
       return next(new HttpError("Curso no encontrado", 404));
     }
-    console.log(course.professor)
+    console.log(course.professor);
     isCourseOfThisUser(req.user, course.professor);
 
     updates.forEach((key) => {
@@ -104,7 +117,6 @@ const updateCourse = async (req, res, next) => {
     next(e);
   }
 };
-// como profe y admin puedo eliminar un curso -> mi curso
 const deleteCourse = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -112,8 +124,7 @@ const deleteCourse = async (req, res, next) => {
       return next(new HttpError("Curso no encontrado", 404));
     }
 
-
-    isCourseOfThisUser(req.user, { id: course.professor }, "eliminar curso"); //revisar
+    isCourseOfThisUser(req.user, course.professor, "eliminar curso"); 
 
     const hasEnrollments = await Enrollment.exists({ course: course._id });
 
@@ -130,32 +141,45 @@ const deleteCourse = async (req, res, next) => {
 
     res.status(200).json({ message: "Curso eliminado correctamente", course });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
 const getCoursesByProfessor = async (req, res, next) => {
-  const { page, limit } = req.query;
-  try {
-    isCourseOfThisUser(req.user, req.params);
+  const { category, level, price, page, limit } = req.query;
 
-    const result = await paginate(
-      Course,
-      { professor: req.params.id }, //revisar
-      page,
-      limit
-    );
+  const filter = {
+    professor: req.params.id,
+  };
+
+  if (category) filter.category = new RegExp(category, "i");
+  if (level) filter.level = new RegExp(level, "i");
+  if (price) filter.price = price;
+
+  try {
+
+    isCourseOfThisUser(req.user, req.params.id, "No dictas este curso");
+
+    const result = await paginate(Course, filter, page, limit);
+
     if (result.data.length === 0) {
       return next(
         new HttpError("No se encontraron cursos con esos criterios", 404)
       );
     }
+
+    const populatedData = await Course.populate(result.data, {
+      path: "professor",
+      select: "name email dni role",
+    });
+
     res.send({
-      message: "Listado dde cursos",
+      message: "Listado de cursos",
       ...result,
+      data: populatedData,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 

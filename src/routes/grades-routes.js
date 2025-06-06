@@ -11,4 +11,6 @@ router.patch("/student/:id", permit("professor"), validateUpdateGrade, handleVal
 
  router.get("/student/:id", permit("professor", "student"), gradeController.getGradesByStudent ); 
 
+router.get("/courses/:id", permit("professor"), gradeController.getGradesByCourse);
+
  module.exports = router;
