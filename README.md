@@ -127,8 +127,7 @@ Este proyecto consiste en el desarrollo de una **plataforma completa de cursos o
 ### Clonar el repositorio
 
 ```bash
-git clone https://github.com/usuario/challengeFinal-akademi-nombreApellido.git
-cd challengeFinal-akademi-nombreApellido
+git clone https://github.com/griseldaalegre/challengeFinal-akademi-backend-alegre-griselda.git
 ```
 
 ### Backend
