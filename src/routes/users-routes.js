@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const permit = require("../middlewares/roles");
-const handleValidationErrors = require("../middlewares/handle-validation-errors"); //revisar
+const handleValidationErrors = require("../middlewares/handle-validation-errors"); 
 
 const { editUserValidator,createUserValidator  } = require("../validators/user-validator");
 

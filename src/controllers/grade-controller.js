@@ -3,8 +3,7 @@ const Course = require("../models/Course");
 const Grade = require("../models/Grade");
 const HttpError = require("../utils/Http-Error");
 const paginate = require("../utils/Pagination");
-const isCourseOfThisUser = require("../utils/is-course-this-user"); //renombrar
-
+const isCourseOfThisUser = require("../utils/is-course-this-user");
 const addGrade = async (req, res, next) => {
   const { student: studentId, course: courseId, score } = req.body;
 
@@ -29,7 +28,7 @@ const addGrade = async (req, res, next) => {
       grade,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -46,8 +45,8 @@ const updateGrade = async (req, res, next) => {
     const existingGrade = await Grade.findById(req.params.id).populate(
       "course"
     );
-
     if (!existingGrade) {
+      
       return next(new HttpError("Calificación no encontrada", 404));
     }
 
@@ -66,20 +65,34 @@ const updateGrade = async (req, res, next) => {
       grade: updatedGrade,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
 const getGradesByStudent = async (req, res, next) => {
   const { page, limit } = req.query;
-  const { id } = req.params;
+  const { id } = req.params; 
 
   try {
     const firstGrade = await Grade.findOne({ student: id }).populate("course");
+
     if (!firstGrade) {
       return next(new HttpError("No se encontraron calificaciones", 404));
     }
-    isCourseOfThisUser(req.user, firstGrade.course);
+
+    const course = firstGrade.course;
+
+
+    if (req.user.role === "professor") {
+      isCourseOfThisUser(
+        req.user,
+        course.professor,
+        "ver calificaciones de este curso"
+      );
+    }
+    if (req.user.role === "student") {
+      isCourseOfThisUser(req.user, id, "ver tus propias calificaciones");
+    }
 
     const result = await paginate(Grade, { student: id }, page, limit);
 
@@ -87,12 +100,47 @@ const getGradesByStudent = async (req, res, next) => {
       return next(new HttpError("No se encontraron calificaciones", 404));
     }
 
+    await Grade.populate(result.data, [
+      { path: "course" },
+      { path: "student" },
+    ]);
     res.status(200).json({
       message: "Listado de calificaciones del alumno",
       ...result,
     });
-  } catch (e) {
+  } catch (error) {
     next(error);
+  }
+};
+
+const getGradesByCourse = async (req, res, next) => {
+  const { page, limit } = req.query;
+  const { id: courseId } = req.params;
+
+  try {
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return next(new HttpError("Curso no encontrado", 404));
+    }
+
+    isCourseOfThisUser(req.user, course.professor);
+
+    const result = await paginate(Grade, { course: courseId }, page, 99999, [
+      { path: "student" },
+    ]);
+
+    if (result.data.length === 0) {
+      return next(new HttpError("No se encontraron calificaciones", 404));
+    }
+
+   
+    res.status(200).json({
+      message: "Listado de calificaciones del curso",
+      ...result 
+        });
+  } catch (e) {
+    next(e);
   }
 };
 
@@ -100,4 +148,5 @@ module.exports = {
   addGrade,
   updateGrade,
   getGradesByStudent,
+  getGradesByCourse,
 };

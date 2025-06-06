@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const HttpError = require("../utils/Http-Error");
 const { sendRecoverEmail } = require("../email/recovery-email");
 
-//probar en que casos falla
+
 const login = async (req, res, next) => {
   try {
     const user = await User.findByCredentials(
@@ -13,7 +13,7 @@ const login = async (req, res, next) => {
     const token = jwt.sign(
       {
         _id: user._id,
-        rol: user.rol,
+        role: user.role,
         name: user.name, 
         email: user.email, 
       },
@@ -25,7 +25,7 @@ const login = async (req, res, next) => {
 
     res.send({ message: "Usuario logueado correctamente", user, token });
   } catch (e) {
-    next(error);
+    next(e);
   }
   
 };
@@ -50,7 +50,7 @@ const registerUser = async (req, res, next) => {
       user: userObj,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
   
 };
@@ -68,7 +68,7 @@ const forgotPassword = async (req, res, next) => {
     { expiresIn: "1h" }
   );
 
-  const recoveryLink = `http://localhost:3000/users/reset-password/${recoveryToken}`;
+  const recoveryLink = `http://localhost:3000/reset-password/${recoveryToken}`;
 
   user.token = recoveryToken;
   await user.save();
@@ -104,9 +104,19 @@ const resetPassword = async (req, res, next) => {
 
     res.send({ message: "Contraseña actualizada exitosamente" });
   } catch (e) {
-    next(error);
+    next(e);
   }
   
+};
+
+const logout = async (req, res, next) => {
+  try {
+    req.user.token = null;
+    await req.user.save();
+    res.send({ message: "Sesión cerrada con éxito" });
+  } catch (error) {
+    next(new HttpError("No se pudo cerrar la sesión. Intente nuevamente.", 500));
+  }
 };
 
 module.exports = {
@@ -114,4 +124,5 @@ module.exports = {
   registerUser,
   forgotPassword,
   resetPassword,
+  logout
 };

@@ -2,14 +2,18 @@ const User = require("../models/User");
 const Course = require("../models/Course");
 const Enrollment = require("../models/Enrollment");
 const HttpError = require("../utils/Http-Error");
-const paginate = require("../utils/pagination");
+const paginate = require("../utils/Pagination");
 const isCourseOfThisUser = require("../utils/is-course-this-user");
 
 const getUsers = async (req, res, next) => {
-  const { page, limit } = req.query;
+  const { name, role, page, limit } = req.query;
+
+  filter = {};
+  if (name) filter.name = { $regex: name, $options: "i" };
+  if (role) filter.role = new RegExp(role);
 
   try {
-    const result = await paginate(User, {}, page, limit);
+    const result = await paginate(User, filter, page, limit);
 
     if (result.data.length === 0) {
       return next(new HttpError("No hay usuarios registrados", 404));
@@ -30,7 +34,7 @@ const getUsers = async (req, res, next) => {
       data: sanitizedUsers,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -48,8 +52,8 @@ const getUser = async (req, res, next) => {
     }
 
     isCourseOfThisUser(
-      req.user, //logueado
-      user, //el que hace el req
+      req.user,
+      user,
       "Este perfil no pertenece al estudiante logueado."
     );
 
@@ -150,7 +154,7 @@ const deleteUser = async (req, res, next) => {
     await user.deleteOne();
     res.status(200).json({ message: "Usuario eliminado correctamente", user });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -171,7 +175,7 @@ const createUser = async (req, res, next) => {
       user: userObj,
     });
   } catch (e) {
-    next(error);
+    next(e);
   }
 };
 
@@ -186,6 +190,7 @@ const getGeneralStats = async (req, res, next) => {
     const totalEnrollments = await Enrollment.countDocuments();
 
     res.status(200).json({
+      message: "Estadisticas Generales",
       totalUsers,
       students,
       professors,
@@ -193,8 +198,13 @@ const getGeneralStats = async (req, res, next) => {
       totalCourses,
       totalEnrollments,
     });
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(
+      new HttpError(
+        "No se pudieron obtener las estadísticas generales del sistema",
+        500
+      )
+    );
   }
 };
 
@@ -204,5 +214,5 @@ module.exports = {
   editUser,
   deleteUser,
   createUser,
-  getGeneralStats
+  getGeneralStats,
 };

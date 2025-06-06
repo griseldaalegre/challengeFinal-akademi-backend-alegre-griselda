@@ -12,7 +12,7 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    return next(new HttpError("No autorizado", 401)); //revisar si el error esta bien
+    return next(new HttpError("No autorizado", 401)); 
   }
 };
 

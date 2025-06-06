@@ -1,7 +1,6 @@
 const { check, body } = require("express-validator");
 const HttpError = require("../utils/Http-Error");
 const Course = require("../models/Course")
-//revisar
 
 const createUserValidator = [
   check("email")
@@ -28,24 +27,6 @@ const createUserValidator = [
     return true;
   }),
 
-  check("profile").custom((value, { req }) => {
-    const role = req.body.role;
-
-    if (role === "professor") {
-      if (
-        !value ||
-        typeof value !== "object" ||
-        !value.credential?.trim() ||
-        !value.title?.trim()
-      ) {
-        throw new HttpError(
-          "La credencial y el título son requeridos para profesores"
-        );
-      }
-    }
-
-    return true;
-  }),
 ];
 
 const editUserValidator = [
@@ -80,21 +61,7 @@ const editUserValidator = [
       return true;
     }),
 
-  body("profile")
-    .optional()
-    .custom((value, { req }) => {
-      const role = req.body.role;
-      if (role === "professor") {
-        if ("credential" in value && value.credential === "") {
-          throw new HttpError("La credencial no puede estar vacía");
-        }
-        if ("title" in value && value.title === "") {
-          throw new HttpError("El título no puede estar vacío");
-        }
-      }
-
-      return true;
-    }),
+ 
 ];
 
 module.exports = editUserValidator;
