@@ -25,7 +25,6 @@ const login = async (req, res, next) => {
 
     res.send({ message: "Usuario logueado correctamente", user, token });
   } catch (e) {
-    console.log(e);
     next(e);
   }
   
@@ -116,7 +115,6 @@ const logout = async (req, res, next) => {
     await req.user.save();
     res.send({ message: "Sesión cerrada con éxito" });
   } catch (error) {
-    console.error("Error al cerrar sesión:", error);
     next(new HttpError("No se pudo cerrar la sesión. Intente nuevamente.", 500));
   }
 };

@@ -6,9 +6,6 @@ const isCourseOfThisUser = (userAuth, ownerId, resourceName = "para utilizar est
   const ownerString = typeof ownerId === "object" && ownerId.toString ? ownerId.toString() : ownerId;
   const userString = userAuth._id.toString();
 
-  console.log("userAuth._id:", userString);
-  console.log("ownerId:", ownerString);
-
   if (userString !== ownerString) {
     throw new HttpError(`No autorizado: ${resourceName}`, 403);
   }

@@ -86,8 +86,6 @@ const cancelEnrollment = async (req, res, next) => {
       "La inscripción no te pertenece"
     );
 
-    console.log("REQ.BODY:", req.body);
-
     await enrollment.deleteOne();
 
     res.status(200).json({
@@ -105,7 +103,6 @@ const getEnrollmentsByCourse = async (req, res, next) => {
 
   try {
     const course = await Course.findById(id);
-    console.log(course);
     if (!course) {
       return next(new HttpError("Curso no encontrado", 404));
     }

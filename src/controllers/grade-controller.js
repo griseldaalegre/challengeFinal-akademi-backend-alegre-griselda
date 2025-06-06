@@ -45,8 +45,6 @@ const updateGrade = async (req, res, next) => {
     const existingGrade = await Grade.findById(req.params.id).populate(
       "course"
     );
-      console.log(req.params.id)
-    console.log(existingGrade)
     if (!existingGrade) {
       
       return next(new HttpError("Calificación no encontrada", 404));

@@ -47,7 +47,7 @@ const createCourse = async (req, res, next) => {
       return next(new HttpError("Profesor no encontrado", 404));
     }
 
-    isCourseOfThisUser(req.user._id, professorUser._id, "No dictas este curso");
+    isCourseOfThisUser(req.user, professorUser._id, "No dictas este curso");
 
     const course = new Course(req.body);
     await course.save();
@@ -100,7 +100,6 @@ const updateCourse = async (req, res, next) => {
     if (!course) {
       return next(new HttpError("Curso no encontrado", 404));
     }
-    console.log(course.professor);
     isCourseOfThisUser(req.user, course.professor);
 
     updates.forEach((key) => {
